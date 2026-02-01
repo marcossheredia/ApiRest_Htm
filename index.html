@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">MusicTracker</div>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar artista, banda...">
+            <button id="search-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+        </div>
+    </nav>
+
+    <section id="suggestions-view" class="fade-in">
+        <div class="hero-header">
+            <h1>Descubre tu próxima obsesión musical</h1>
+            <p>Explora la discografía, estadísticas y conexiones de tus artistas favoritos.</p>
+        </div>
+        <div class="section-label">Tendencias Globales</div>
+        <div id="suggestions-grid" class="grid-container">
+            </div>
+    </section>
+
+    <main id="main-content" class="hidden fade-in">
+        
+        <header class="artist-header" id="artist-header-bg">
+            <div class="overlay"></div>
+            <div class="header-content">
+                <div class="img-wrapper">
+                    <img id="artist-img" src="" alt="Artista">
+                </div>
+                <div class="info-wrapper">
+                    <h1 id="artist-name">Nombre Artista</h1>
+                    <div id="artist-tags" class="tags-row"></div>
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <span class="stat-label">Oyentes Mensuales</span>
+                            <strong id="artist-listeners" class="stat-number">0</strong>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Reproducciones Totales</span>
+                            <strong id="artist-playcount" class="stat-number">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout-grid">
+            
+            <aside class="sidebar">
+                <div class="bio-section">
+                    <h3>Biografía</h3>
+                    <p id="artist-bio">Cargando biografía...</p>
+                </div>
+                
+                <div class="similar-section">
+                    <h3>Artistas Similares</h3>
+                    <div id="similar-grid" class="similar-grid-layout">
+                        </div>
+                </div>
+            </aside>
+
+            <section class="tracks-section">
+                <h3>Canciones Populares</h3>
+                <div class="tracks-header">
+                    <span>#</span>
+                    <span>Título</span>
+                    <span style="text-align: right;">Reproducciones</span>
+                </div>
+                <ul id="tracks-list" class="tracks-list">
+                    </ul>
+            </section>
+        </div>
+
+    </main>
+
+    <div id="loading" class="hidden">
+        <div class="spinner"></div>
+    </div>
+    <div id="error-msg" class="hidden"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
