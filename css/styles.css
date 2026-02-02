@@ -106,9 +106,38 @@ nav {
     font-weight: 800;
     letter-spacing: -1.5px;
     margin-bottom: 1rem;
-    background: linear-gradient(to right, #fff, #888);
+
+    /* --- EFECTO DEGRADADO ANIMADO --- */
+    
+    /* 1. El degradado: Gris -> Blanco -> Gris (hace que el bucle sea invisible) */
+    background: linear-gradient(
+        to right, 
+        #888888 0%, 
+        #ffffff 50%, 
+        #888888 100%
+    );
+
+    /* 2. Hacemos el fondo gigante (200%) para poder moverlo */
+    background-size: 200% auto;
+    
+    /* 3. Recortamos el fondo para que solo se vea en las letras */
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
+
+    /* 4. La animación: Lenta (10s) y continua (linear) */
+    animation: shineFlow 10s linear infinite;
+}
+
+/* --- DEFINICIÓN DE LA ANIMACIÓN --- */
+@keyframes shineFlow {
+    from {
+        background-position: 0% center;
+    }
+    to {
+        background-position: 200% center;
+    }
 }
 
 .hero-header p {
@@ -403,3 +432,183 @@ h3 {
     .tags-row, .stats-row { justify-content: center; }
     .hero-header h1 { font-size: 2.5rem; }
 }
+
+.play-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.play-btn:hover {
+    background: var(--text-primary);
+    color: var(--bg-main);
+    transform: scale(1.1);
+}
+
+/* --- REPRODUCTOR AUDIO PROFESIONAL --- */
+.player-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: rgba(22, 22, 22, 0.95);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    z-index: 2000;
+    transform: translateY(100%); /* Oculto inicialmente */
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+}
+
+.player-bar.active {
+    transform: translateY(0);
+}
+
+.player-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Info Track */
+.track-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 30%;
+}
+
+.track-info img {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.track-text h4 {
+    font-size: 0.95rem;
+    margin: 0;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.track-text p {
+    font-size: 0.8rem;
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+/* Controles Centrales */
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.control-btn:hover { color: var(--text-primary); }
+
+.play-btn-large {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    color: var(--bg-main);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.play-btn-large:hover { transform: scale(1.1); }
+
+/* Barra Progreso y Extras */
+.player-extras {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    width: 30%;
+    justify-content: flex-end;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-grow: 1;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    background: transparent;
+    width: 100%;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    margin-top: -4px; /* Centrar verticalmente */
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.progress-container:hover input[type="range"]::-webkit-slider-thumb {
+    opacity: 1;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100px;
+}
+
+/* Animación de entrada */
+@media (max-width: 768px) {
+    .player-bar { height: 120px; }
+    .player-content { flex-direction: column; padding: 1rem; }
+    .track-info, .player-extras, .player-controls { width: 100%; justify-content: center; }
+    .player-extras { display: none; } /* Ocultar volumen en móvil para ahorrar espacio */
+}
+
