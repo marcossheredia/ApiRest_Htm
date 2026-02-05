@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770289823246" clover="3.2.0">
-  <project timestamp="1770289823246" name="All files">
+<coverage generated="1770290065798" clover="3.2.0">
+  <project timestamp="1770290065798" name="All files">
     <metrics statements="227" coveredstatements="156" conditionals="91" coveredconditionals="41" methods="37" coveredmethods="30" elements="355" coveredelements="227" complexity="0" loc="227" ncloc="227" packages="1" files="1" classes="1"/>
     <file name="app.js" path="C:\Users\alumno\apiHtml\ApiRest_Htm\js\app.js">
       <metrics statements="227" coveredstatements="156" conditionals="91" coveredconditionals="41" methods="37" coveredmethods="30"/>
