@@ -58,6 +58,7 @@ window.addEventListener('DOMContentLoaded', initApp);
 function initApp() {
     renderSuggestions();
     setupEventListeners();
+    setupPlayerEvents();
 }
 
 function setupEventListeners() {
@@ -130,38 +131,31 @@ const IMAGENES_LOCALES = {
 };
 
 // --- LOGICA SUGERENCIAS (HOME) ---
+// EN app.js
 function renderSuggestions() {
     dom.suggestionsGrid.innerHTML = '';
     
-    ARTISTAS_SUGERIDOS.forEach(async (artist) => {
+    // CAMBIO CLAVE: Usamos map en vez de forEach y devolvemos Promise.all
+    // Esto permite que el Test espere a que se creen las tarjetas
+    const promises = ARTISTAS_SUGERIDOS.map(async (artist) => {
         const card = document.createElement('div');
         card.className = 'artist-card';
-        
-        // Estructura base
         card.innerHTML = `
             <div class="img-container">
                  <div style="width:100%; height:100%; background:#222;"></div>
             </div>
-            <div class="card-info">
-                <h3>${artist}</h3>
-            </div>
+            <div class="card-info"><h3>${artist}</h3></div>
         `;
         dom.suggestionsGrid.appendChild(card);
 
-        // --- CAMBIO AQUÍ: LÓGICA DE IMAGEN ---
         let imgUrl;
-
-        // A. ¿Está en tu lista de fotos personalizadas?
         if (IMAGENES_LOCALES[artist]) {
             imgUrl = IMAGENES_LOCALES[artist];
-        } 
-        // B. Si no, la buscamos en Internet (Wiki)
-        else {
+        } else {
             const foto = await fetchWikiImage(artist);
             imgUrl = foto || `https://placehold.co/400x400/333/fff?text=${artist[0]}`;
         }
         
-        // Actualizamos la tarjeta con la imagen final
         card.querySelector('.img-container').innerHTML = `<img src="${imgUrl}" alt="${artist}" loading="lazy">`;
 
         card.addEventListener('click', () => {
@@ -169,6 +163,8 @@ function renderSuggestions() {
             loadArtistData(artist);
         });
     });
+
+    return Promise.all(promises); // <--- ESTO ES LA CLAVE DEL 100%
 }
 
 // --- CORE: CARGAR ARTISTA ---
@@ -333,30 +329,28 @@ function renderTracks(tracks, artistName) {
     });
 }
 
-function renderSimilar(artists) {
+// EN app.js
+async function renderSimilar(artists) { // Añade async aquí si no estaba
     dom.similarGrid.innerHTML = '';
     const artistArray = Array.isArray(artists) ? artists : [artists];
 
-    artistArray.forEach(async (artist) => { // Añadimos async aquí
+    // CAMBIO CLAVE: map + Promise.all
+    const promises = artistArray.map(async (artist) => {
         const div = document.createElement('div');
         div.className = 'similar-card';
-        // Ponemos un placeholder mientras carga
         div.innerHTML = `<img src="https://placehold.co/150x150/333/fff?text=..." alt="${artist.name}"> <p>${artist.name}</p>`;
         dom.similarGrid.appendChild(div);
 
-        // --- LÓGICA DE FOTO MEJORADA ---
         let imgUrl;
         if (IMAGENES_LOCALES[artist.name]) {
-            // Si está en tu carpeta, úsala
             imgUrl = IMAGENES_LOCALES[artist.name];
         } else {
-            // Si no, búscala en wiki
             const wikiImg = await fetchWikiImage(artist.name);
             imgUrl = wikiImg || 'https://placehold.co/150x150/333/fff?text=' + artist.name[0];
         }
 
-        // Actualizamos la imagen
-        div.querySelector('img').src = imgUrl;
+        const img = div.querySelector('img');
+        if(img) img.src = imgUrl;
 
         div.addEventListener('click', () => {
             dom.searchInput.value = artist.name;
@@ -364,6 +358,8 @@ function renderSimilar(artists) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
+
+    return Promise.all(promises); // <--- CLAVE PARA EL TEST
 }
 
 // --- LOGICA DEL REPRODUCTOR (AUDIO ENGINE) ---
@@ -381,15 +377,32 @@ const playerDom = {
     volSlider: document.getElementById('volume-slider')
 };
 
-// Control Principal
-playerDom.playBtn.addEventListener('click', togglePlayPause);
-playerDom.volSlider.addEventListener('input', (e) => currentAudio.volume = e.target.value);
-currentAudio.addEventListener('timeupdate', updateProgress);
-currentAudio.addEventListener('ended', () => {
-    isPlaying = false;
-    updatePlayIcon();
-    playerDom.progressBar.value = 0;
-});
+// 1. CREA ESTA NUEVA FUNCIÓN (Justo antes de initPlayer o por esa zona)
+function setupPlayerEvents() {
+    // Verificamos que existan los elementos antes de asignar eventos
+    if (!playerDom.playBtn || !playerDom.progressBar) return;
+
+    playerDom.playBtn.addEventListener('click', togglePlayPause);
+    
+    if (playerDom.volSlider) {
+        playerDom.volSlider.addEventListener('input', (e) => currentAudio.volume = e.target.value);
+    }
+    
+    // El evento que daba error antes
+    playerDom.progressBar.addEventListener('input', (e) => {
+        const duration = currentAudio.duration;
+        if(duration) {
+            currentAudio.currentTime = (e.target.value / 100) * duration;
+        }
+    });
+
+    currentAudio.addEventListener('timeupdate', updateProgress);
+    currentAudio.addEventListener('ended', () => {
+        isPlaying = false;
+        updatePlayIcon();
+        if(playerDom.progressBar) playerDom.progressBar.value = 0;
+    });
+}
 
 // --- FUNCIÓN ARREGLADA (NUEVO PROXY) ---
 async function initPlayer(artist, song, image) {
@@ -499,12 +512,7 @@ function updateProgress() {
 }
 
 // Permitir buscar ("seek") en la barra
-playerDom.progressBar.addEventListener('input', (e) => {
-    const duration = currentAudio.duration;
-    if(duration) {
-        currentAudio.currentTime = (e.target.value / 100) * duration;
-    }
-});
+
 
 // Función auxiliar para conectar con Deezer directamente (JSONP)
 function fetchDeezer(url) {
@@ -532,12 +540,25 @@ function fetchDeezer(url) {
     });
 }
 
-// --- AL FINAL DEL ARCHIVO app.js ---
 if (typeof module !== 'undefined') {
     module.exports = {
         cleanTrackTitle,
         formatTime,
-        API_KEY,
-        BASE_URL
+        initApp,
+        toggleView,
+        handleSearch,
+        loadArtistData,
+        renderSuggestions,
+        fetchWikiImage,
+        initPlayer,
+        togglePlayPause,
+        updateProgress,
+        fetchDeezer,
+        setupPlayerEvents,
+        getAudioState: () => ({ currentAudio, isPlaying }),
+        setAudioState: (audio, playing) => {
+            currentAudio = audio;
+            isPlaying = playing;
+        }
     };
 }
