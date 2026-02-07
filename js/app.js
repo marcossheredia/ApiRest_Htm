@@ -160,7 +160,11 @@ function renderSuggestions() {
 
         card.addEventListener('click', () => {
             dom.searchInput.value = artist;
-            loadArtistData(artist);
+            if (window && window.app && typeof window.app.loadArtistData === 'function') {
+                window.app.loadArtistData(artist);
+            } else {
+                loadArtistData(artist);
+            }
         });
     });
 
@@ -270,7 +274,7 @@ async function fetchWikiImage(artistName) {
 
     } catch (e) {
         console.warn("Error recuperando foto wiki:", e);
-        return null;
+        throw e;
     }
 }
 
@@ -354,7 +358,11 @@ async function renderSimilar(artists) { // Añade async aquí si no estaba
 
         div.addEventListener('click', () => {
             dom.searchInput.value = artist.name;
-            loadArtistData(artist.name);
+            if (window && window.app && typeof window.app.loadArtistData === 'function') {
+                window.app.loadArtistData(artist.name);
+            } else {
+                loadArtistData(artist.name);
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
@@ -522,8 +530,12 @@ function fetchDeezer(url) {
         const callbackName = 'deezer_callback_' + Math.round(100000 * Math.random());
         
         window[callbackName] = function(data) {
-            delete window[callbackName];
-            document.body.removeChild(script);
+            try {
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+            } catch (e) {
+                // ignorar si el script no está en el body (mock de tests)
+            }
             resolve(data);
         };
 
@@ -531,8 +543,12 @@ function fetchDeezer(url) {
         const separator = url.includes('?') ? '&' : '?';
         script.src = url + separator + 'output=jsonp&callback=' + callbackName;
         script.onerror = (err) => {
-            delete window[callbackName];
-            document.body.removeChild(script);
+            try {
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+            } catch (e) {
+                // noop
+            }
             reject(err);
         };
         
@@ -549,6 +565,8 @@ if (typeof module !== 'undefined') {
         handleSearch,
         loadArtistData,
         renderSuggestions,
+        renderSimilar,
+        updatePlayIcon,
         fetchWikiImage,
         initPlayer,
         togglePlayPause,
@@ -561,4 +579,7 @@ if (typeof module !== 'undefined') {
             isPlaying = playing;
         }
     };
+    try {
+        if (typeof window !== 'undefined') window.app = module.exports;
+    } catch (e) {}
 }
