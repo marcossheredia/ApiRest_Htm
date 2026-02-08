@@ -1,3 +1,11 @@
+/*
+    Archivo: js/app.js
+    Propósito: Lógica principal de la aplicación MusicTracker.
+    - Configuración de APIs (Last.fm, Deezer, Wikipedia)
+    - Renderizado de UI (sugerencias, detalle de artista, similar, tracks)
+    - Motor de reproducción (carga de preview desde Deezer, controles)
+    Notas: exporta funciones para facilitar tests unitarios.
+*/
 // --- CONFIGURACIÓN ---
 const API_KEY = '04ad86cd8897770fd21ef924ad732d65'; 
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
@@ -77,6 +85,10 @@ function setupEventListeners() {
 
 // --- GESTIÓN DE VISTAS ---
 // --- GESTIÓN DE VISTAS (MODIFICADA) ---
+/**
+ * Cambia la vista activa de la aplicación.
+ * @param {string} viewName - 'home' | 'detail' | 'loading'
+ */
 function toggleView(viewName) {
     // 1. Ocultar todo primero
     dom.suggestionsView.classList.add('hidden');
@@ -178,6 +190,12 @@ async function handleSearch() {
 }
 
 // COPIA Y PEGA ESTA FUNCIÓN ENTERA
+/**
+ * Carga la información de un artista (Last.fm + Wikipedia) y actualiza la UI.
+ * - Obtiene info, top tracks y artistas similares en paralelo
+ * - Selecciona la foto (local o de Wikipedia)
+ * @param {string} artistName
+ */
 async function loadArtistData(artistName) {
     toggleView('loading');
 
@@ -221,6 +239,12 @@ async function loadArtistData(artistName) {
 }
 
 // --- HELPERS API ---
+/**
+ * Realiza una petición a la API de Last.fm.
+ * @param {string} method - método de la API (ej. 'artist.getinfo')
+ * @param {Object} params - parámetros adicionales para la consulta
+ * @returns {Promise<Object>} - JSON de la respuesta
+ */
 async function fetchLastFm(method, params) {
     const url = new URL(BASE_URL);
     url.search = new URLSearchParams({
@@ -234,6 +258,12 @@ async function fetchLastFm(method, params) {
 }
 
 // --- API WIKIPEDIA INTELIGENTE (Búsqueda + Foto) ---
+/**
+ * Busca y devuelve la URL de la imagen principal de Wikipedia para un artista.
+ * Usa correcciones locales y, si procede, la API de resumen de Wikipedia.
+ * @param {string} artistName
+ * @returns {Promise<string|null>} - URL de la miniatura o null si no existe
+ */
 async function fetchWikiImage(artistName) {
     try {
         // 1. DICCIONARIO MÍNIMO
@@ -386,6 +416,10 @@ const playerDom = {
 };
 
 // 1. CREA ESTA NUEVA FUNCIÓN (Justo antes de initPlayer o por esa zona)
+/**
+ * Asigna los eventos del reproductor (play/pause, progreso, volumen).
+ * Comprueba la existencia de elementos DOM antes de ligar handlers.
+ */
 function setupPlayerEvents() {
     // Verificamos que existan los elementos antes de asignar eventos
     if (!playerDom.playBtn || !playerDom.progressBar) return;
@@ -413,6 +447,14 @@ function setupPlayerEvents() {
 }
 
 // --- FUNCIÓN ARREGLADA (NUEVO PROXY) ---
+/**
+ * Inicializa el reproductor para una canción concreta.
+ * - Busca preview en Deezer
+ * - Prepara el `Audio` y actualiza la UI del reproductor
+ * @param {string} artist
+ * @param {string} song
+ * @param {string} image - URL de imagen/portada
+ */
 async function initPlayer(artist, song, image) {
     // UI Visual
     playerDom.bar.classList.remove('hidden');
@@ -523,6 +565,12 @@ function updateProgress() {
 
 
 // Función auxiliar para conectar con Deezer directamente (JSONP)
+/**
+ * Consulta la API de Deezer mediante JSONP y devuelve el resultado.
+ * Se usa JSONP porque la API pública requiere callback para evitar CORS.
+ * @param {string} url
+ * @returns {Promise<Object>}
+ */
 function fetchDeezer(url) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');

@@ -1,3 +1,9 @@
+/*
+    Archivo: css/styles.css
+    Descripción: Variables y estilos principales para la UI de MusicTracker.
+    - Variables CSS en :root para tema oscuro
+    - Componentes: navegación, cards, cabecera, reproductor
+*/
 :root {
     /* Paleta Profesional Oscura */
     --bg-main: #0a0a0a;

@@ -2,6 +2,14 @@
  * @jest-environment jsdom
  */
 
+/*
+  Archivo: tests/app.test.js
+  Propósito: pruebas unitarias Jest para la app MusicTracker.
+  - Emplea `jsdom` para simular el DOM
+  - Mockea `fetch` y `Audio` para aislar la lógica de red y audio
+  - Cubre helpers, renderizado de UI, flujo de búsqueda y reproductor
+*/
+
 // ================= HTML MOCK =================
 const INITIAL_HTML = `
 <nav>
@@ -45,9 +53,11 @@ const INITIAL_HTML = `
 </div>
 `;
 
+// Mock de scrollTo para evitar errores durante tests que usan window.scrollTo
 window.scrollTo = jest.fn();
 
 // ================= AUDIO MOCK =================
+// Mock simple del objeto `Audio` usado por la app para controlar reproducción
 class AudioMock {
   constructor() {
     this.src = '';
@@ -71,10 +81,17 @@ class AudioMock {
     if (this.listeners[evt]) this.listeners[evt]();
   }
 }
+// Exponer el mock globalmente como `Audio` para que la app lo use
 global.Audio = AudioMock;
 
 const flushPromises = () => new Promise(r => setTimeout(r, 0));
 
+/**
+ * Suite principal: valida comportamiento completo de la app
+ * - Inicialización y rendering de sugerencias
+ * - Flujo de búsqueda (Last.fm + Wikipedia)
+ * - Reproductor (play/pause, progreso, volumen, ended)
+ */
 describe('APP – Cobertura 100%', () => {
   let app;
 
@@ -128,6 +145,7 @@ describe('APP – Cobertura 100%', () => {
       return Promise.resolve({ json: () => Promise.resolve({}) });
     });
 
+    // Cargar el módulo de la app después de preparar los mocks DOM/fetch
     app = require('../js/app.js');
     app.setAudioState(new AudioMock(), false);
     app.initApp();
@@ -135,12 +153,14 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('helpers: cleanTrackTitle & formatTime', () => {
+    // Verifica utilidades de texto y formateo de tiempo
     expect(app.cleanTrackTitle('Song (Live)')).toBe('Song');
     expect(app.formatTime(125)).toBe('2:05');
     expect(app.formatTime(-1)).toBe('0:00');
   });
 
   test('render suggestions + click invokes loadArtistData', () => {
+    // Comprueba que las sugerencias se renderizan y el click dispara carga
     const grid = document.getElementById('suggestions-grid');
     expect(grid.children.length).toBeGreaterThan(0);
 
@@ -151,6 +171,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('search flow renders artist, tracks and similars', async () => {
+    // Simula búsqueda por input y espera a que la app procese la respuesta
     document.getElementById('search-input').value = 'Queen';
     document.getElementById('search-btn').click();
 
@@ -162,6 +183,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('error fetch shows error message', async () => {
+    // Forzamos fallo en fetch para comprobar que se muestra un mensaje de error
     global.fetch.mockImplementationOnce(() => Promise.reject('fail'));
     await app.loadArtistData('Fail');
     await flushPromises();
@@ -169,6 +191,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('player controls: play/pause, volume, progress and ended', () => {
+    // Inicializa listeners del reproductor y valida su comportamiento
     app.setupPlayerEvents();
     const { currentAudio } = app.getAudioState();
 
@@ -190,11 +213,13 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('fetchWikiImage usa summary y devuelve thumbnail', async () => {
+    // Comprueba que fetchWikiImage devuelve la miniatura esperada
     const thumb = await app.fetchWikiImage('Queen');
     expect(thumb).toBe('img.jpg');
   });
 
   test('fetchDeezer JSONP resuelve correctamente y limpia callback', async () => {
+    // Simula la inserción de script JSONP para devolver datos de Deezer
     const originalAppend = document.body.appendChild;
     const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((script) => {
       const src = script.src || '';
@@ -219,6 +244,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('fetchDeezer rechaza cuando el script dispara onerror', async () => {
+    // Forzamos error en la carga del script para validar el reject
     const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((script) => {
       if (script.onerror) script.onerror(new Error('load error'));
       return script;
@@ -229,6 +255,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('renderSimilar crea tarjetas y el click llama loadArtistData', async () => {
+    // Verifica que renderSimilar crea tarjetas con imagen y el click llama a loadArtistData
     const spy = jest.spyOn(app, 'loadArtistData').mockImplementation(() => {});
     // pasar array con objeto
     await app.renderSimilar([{ name: 'Leiva' }]);
@@ -247,6 +274,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('setupPlayerEvents no lanza si faltan elementos (guard clause)', () => {
+    // Quitar elementos para comprobar cláusula de guardia y evitar excepciones
     const playBtn = document.getElementById('play-pause-btn');
     const prog = document.getElementById('progress-bar');
 
@@ -262,6 +290,7 @@ describe('APP – Cobertura 100%', () => {
   });
 
   test('updatePlayIcon actualiza iconos según isPlaying', () => {
+    // Comprueba que los iconos de play/pause muestran el estado correcto
     app.setAudioState(new AudioMock(), true);
     app.updatePlayIcon();
     expect(document.getElementById('icon-play').classList.contains('hidden')).toBe(true);
