@@ -618,3 +618,150 @@ input[type="range"]::-webkit-slider-thumb {
     .player-extras { display: none; } /* Ocultar volumen en móvil para ahorrar espacio */
 }
 
+
+/* =========================
+   MOBILE OPTIMIZATION
+   ========================= */
+@media (max-width: 600px) {
+
+    /* GENERAL SPACING */
+    body {
+        font-size: 0.95rem;
+    }
+
+    nav {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        font-size: 1.1rem;
+    }
+
+    .search-container {
+        width: 100%;
+    }
+
+    /* HERO */
+    #suggestions-view {
+        padding: 2rem 1rem;
+    }
+
+    .hero-header {
+        margin-bottom: 2rem;
+    }
+
+    .hero-header h1 {
+        font-size: 2rem;
+        letter-spacing: -0.5px;
+    }
+
+    .hero-header p {
+        font-size: 1rem;
+    }
+
+    /* GRID CARDS */
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .artist-card h3 {
+        font-size: 0.9rem;
+    }
+
+    /* ARTIST HEADER */
+    .artist-header {
+        padding: 2rem 1rem;
+    }
+
+    .img-wrapper {
+        width: 160px;
+        height: 160px;
+    }
+
+    .info-wrapper h1 {
+        font-size: 2rem;
+        letter-spacing: -1px;
+    }
+
+    .stats-row {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    /* LAYOUT GRID */
+    .layout-grid {
+        padding: 0 1rem;
+        gap: 2rem;
+    }
+
+    /* TRACKS */
+    .tracks-header {
+        grid-template-columns: 30px 1fr 70px;
+        font-size: 0.65rem;
+    }
+
+    .track-item {
+        grid-template-columns: 30px 1fr 70px;
+        padding: 0.6rem 0.5rem;
+    }
+
+    .track-name {
+        font-size: 0.9rem;
+    }
+
+    .track-plays {
+        font-size: 0.8rem;
+    }
+
+    /* SIMILAR GRID */
+    .similar-grid-layout {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .similar-card p {
+        font-size: 0.75rem;
+    }
+
+    /* PLAYER */
+    .player-bar {
+        height: 110px;
+    }
+
+    .player-content {
+        padding: 0.75rem;
+    }
+
+    .track-info img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .track-text h4 {
+        font-size: 0.85rem;
+    }
+
+    .track-text p {
+        font-size: 0.7rem;
+    }
+
+    .player-controls {
+        gap: 1rem;
+    }
+
+    .play-btn-large {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Para que el player no tape contenido */
+    main {
+        padding-bottom: 140px;
+    }
+
+}
+
